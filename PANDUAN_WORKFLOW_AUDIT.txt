@@ -1,11 +1,10 @@
 ==========================================================
-PANDUAN WORKFLOW AUDIT ML - VERSI 3 (PERFECT VERSION)
+PANDUAN WORKFLOW AUDIT ML 
 ==========================================================
 Sistem Audit Machine Learning untuk Prediksi Kelulusan Mahasiswa
-Standar: Principal ML Engineer / Audit Ready / Inference Ready
 ----------------------------------------------------------
 
-FASE 1: DATA LOADING & EDA DASHBOARD
+FASE 1: DATA LOADING 
 ----------------------------------------------------------
 -> src/data_loader.py
    - Proteksi FileNotFoundError.
@@ -24,7 +23,7 @@ FASE 2: DATA PREPARATION (7 TEKNIK)
    6. Normalization: (Logika di Fase 3).
    7. Imbalance Handling: (Logika di Fase 4).
 
-FASE 3: ADVANCED FEATURE ENGINEERING (5 TEKNIK)
+FASE 3: FEATURE ENGINEERING (5 TEKNIK)
 ----------------------------------------------------------
 -> src/feature_engineering.py
    1. Addition: Fitur Midterm_Avg.
@@ -42,7 +41,7 @@ FASE 4: MODEL COMPARISON & TUNING
    - Hyperparameter Tuning: RandomizedSearchCV (n_iter=10) + StratifiedKFold.
    - Save Models: Semua 10 model disimpan dalam format .pkl.
 
-FASE 5: PROFESSIONAL EVALUATION & VIZ
+FASE 5: MODEL EVALUATION 
 ----------------------------------------------------------
 -> src/evaluate.py
    - Metrik Lengkap: Accuracy, F1-Score, Precision, Recall, AUC-ROC.
@@ -57,4 +56,4 @@ FILE EKSEKUSI & DOKUMENTASI
 2. README.md: Panduan instalasi, teknologi, dan referensi utama.
 3. notebooks/02-full-audit-pipeline.ipynb: Demo audit interaktif.
 ==========================================================
-✅ Status: ALL ISSUES RESOLVED (PERFECT VERSION)
+

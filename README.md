@@ -1,10 +1,10 @@
-# 🎓 Student Performance Prediction — ML Audit Pipeline (PERFECT VERSION)
+#  Student Performance Prediction — ML Audit Pipeline (PERFECT VERSION)
 
 Proyek ini adalah sistem audit Machine Learning end-to-end yang modular dan siap produksi untuk memprediksi kelulusan mahasiswa berdasarkan berbagai parameter demografis dan akademik.
 
 ---
 
-## 📚 Referensi & Dasar Audit
+##  Referensi & Dasar Audit
 Sistem ini dibangun berdasarkan standar **Principal ML Engineer** dengan mematuhi 5 Fase Audit:
 1. **Fase 1: Data Loading & EDA** — Deteksi profil data dan distribusi target.
 2. **Fase 2: Data Preparation** — 7 teknik (Cleaning, Imputation, Transformation, Outlier, Splitting, Normalization, Imbalance).
@@ -14,7 +14,7 @@ Sistem ini dibangun berdasarkan standar **Principal ML Engineer** dengan mematuh
 
 ---
 
-## ⚙️ Instalasi & Persiapan
+##  Instalasi & Persiapan
 
 ### 1. Persiapkan Environment
 Pastikan Anda memiliki Python 3.9+ terinstal.
@@ -31,7 +31,7 @@ Pastikan dataset CSV Anda diletakkan di dalam folder:
 
 ---
 
-## 🚀 Cara Penggunaan
+## Cara Penggunaan
 
 ### A. Jalankan Audit Otomatis (Hasil Akhir)
 Untuk menjalankan seluruh proses audit untuk semua dataset di `data/raw/` sekaligus:
@@ -48,7 +48,7 @@ Jika ingin melihat prosesnya secara detail di setiap fase, buka Notebook:
 
 ---
 
-## 🛠️ Teknologi yang Digunakan
+## Teknologi yang Digunakan
 - **Core**: Python, Pandas, NumPy
 - **ML Framework**: Scikit-Learn, XGBoost
 - **Sampling**: Imbalanced-learn (SMOTE)

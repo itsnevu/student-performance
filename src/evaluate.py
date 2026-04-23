@@ -22,26 +22,32 @@ class ModelEvaluator:
             results = []
             # [C5] StratifiedKFold for stable CV
             cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+            is_multiclass = len(np.unique(y_test)) > 2
             
             for name, model in trained_models.items():
                 y_pred = model.predict(X_test)
-                y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, 'predict_proba') else None
+                y_prob = model.predict_proba(X_test) if hasattr(model, 'predict_proba') else None
                 
                 # [C6] ROC-AUC Guard
                 try:
-                    auc = roc_auc_score(y_test, y_prob) if y_prob is not None else np.nan
+                    if y_prob is None:
+                        auc = np.nan
+                    elif is_multiclass:
+                        auc = roc_auc_score(y_test, y_prob, multi_class='ovr', average='weighted')
+                    else:
+                        auc = roc_auc_score(y_test, y_prob[:, 1])
                 except ValueError:
                     auc = np.nan
 
                 # [M6] Cross Validation (Mean & Std)
-                cv_scores = cross_val_score(model, X_train, y_train, cv=cv, scoring='f1')
+                cv_scores = cross_val_score(model, X_train, y_train, cv=cv, scoring='f1_weighted')
 
                 results.append({
                     'Model': name,
                     'Accuracy': round(accuracy_score(y_test, y_pred), 4),
-                    'F1-Score': round(f1_score(y_test, y_pred, zero_division=0), 4),
-                    'Precision': round(precision_score(y_test, y_pred, zero_division=0), 4),
-                    'Recall': round(recall_score(y_test, y_pred, zero_division=0), 4),
+                    'F1-Score': round(f1_score(y_test, y_pred, average='weighted', zero_division=0), 4),
+                    'Precision': round(precision_score(y_test, y_pred, average='weighted', zero_division=0), 4),
+                    'Recall': round(recall_score(y_test, y_pred, average='weighted', zero_division=0), 4),
                     'AUC-ROC': round(auc, 4) if not np.isnan(auc) else np.nan,
                     'CV F1 Mean': round(cv_scores.mean(), 4),
                     'CV F1 Std': round(cv_scores.std(), 4)

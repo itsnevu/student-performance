@@ -77,7 +77,7 @@ class ModelTrainer:
                     print(f"[*] Tuning {name} (n_iter=10)...")
                     search = RandomizedSearchCV(
                         model, self.tuning_params[name], 
-                        n_iter=10, cv=cv, scoring='f1', n_jobs=-1, random_state=42
+                        n_iter=10, cv=cv, scoring='f1_weighted', n_jobs=1, random_state=42
                     )
                     search.fit(X_res, y_res)
                     best_model = search.best_estimator_

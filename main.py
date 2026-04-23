@@ -9,6 +9,17 @@ from src.evaluate import ModelEvaluator
 from src.exception import CustomException
 from src.logger import logging
 
+def _configure_utf8_console():
+    """Avoid Windows cp1252 print errors for unicode logs/symbols."""
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        # Non-fatal: keep default streams if reconfigure is unavailable.
+        pass
+
 def run_audit_pipeline():
     try:
         raw_data_path = "data/raw"
@@ -67,4 +78,5 @@ def run_audit_pipeline():
         raise CustomException(e, sys)
 
 if __name__ == "__main__":
+    _configure_utf8_console()
     run_audit_pipeline()
