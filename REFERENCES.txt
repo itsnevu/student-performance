@@ -1,0 +1,6 @@
+https://www.kaggle.com/datasets/kukuroo3/student-performance-data-set-competition-form
+http://kaggle.com/code/ashokrajuyadav/higher-education-students-performance-evaluation?select=DATA.csv
+https://www.kaggle.com/datasets/mariazhokhova/higher-education-students-performance-evaluation/data
+https://www.kaggle.com/code/naveenkumar20bps1137/predict-student-s-dropout-and-academic-success-ml
+
+python main.py

@@ -1,68 +1,88 @@
 import sys
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.decomposition import PCA
 from src.exception import CustomException
 from src.logger import logging
 
+# [C4] Guard for OHE compatibility
+try:
+    from sklearn.preprocessing import OneHotEncoder
+    OneHotEncoder(sparse_output=False)
+    OHE_KWARGS = {"sparse_output": False}
+except TypeError:
+    OHE_KWARGS = {"sparse": False}
+
 class FeatureEngineer:
-    def __init__(self, n_components=10):
+    def __init__(self, n_components=5):
         self.n_components = n_components
-        self.scaler = StandardScaler()
-        self.pca = PCA(n_components=self.n_components)
-        self.selector = SelectKBest(score_func=f_classif, k='all')
+
+    def _apply_features(self, data):
+        """
+        Helper: Addition + Extraction + Reduction.
+        Independent logic to prevent leakage.
+        """
+        data = data.copy()
+        if 'G1' in data.columns and 'G2' in data.columns:
+            data['Midterm_Avg'] = (data['G1'] + data['G2']) / 2
+        if 'studytime' in data.columns and 'freetime' in data.columns:
+            data['Study_Efficiency'] = data['studytime'] / (data['freetime'] + 0.1)
+        # M10: Keep 'failures' as it is highly predictive
+        return data.drop(columns=[c for c in ['G1', 'G2'] if c in data.columns])
 
     def apply_feature_engineering(self, X_train, X_test, y_train):
+        """
+        [M1] Returns X_train_final, X_test_final AND preprocessors dict.
+        """
         try:
-            logging.info("--- Fase 3: Feature Engineering (5 Teknik) ---")
+            print("\n--- FASE 3: FEATURE ENGINEERING (5 Teknik) ---")
             
-            # 1. Feature Addition & 2. Extraction
-            for df in [X_train, X_test]:
-                if 'G1' in df.columns and 'G2' in df.columns:
-                    df['Midterm_Avg'] = (df['G1'] + df['G2']) / 2
-                df['Study_Efficiency'] = df['studytime'] / (df['freetime'] + 0.1)
-                df['Fail_History'] = df['failures'].apply(lambda x: 1 if x > 0 else 0)
+            # Step 1-3: Addition, Extraction, Reduction
+            X_train_f = self._apply_features(X_train)
+            X_test_f  = self._apply_features(X_test)
+            print("[✓] Step 1-3: Add/Extract/Reduce Selesai (failures DIPERTAHANKAN)")
 
-            # 3. Feature Reduction (Drop irrelevant/leakage columns)
-            drop_cols = ['G1', 'G2', 'failures'] # Dropped because extracted/added
-            X_train = X_train.drop([c for c in drop_cols if c in X_train.columns], axis=1)
-            X_test = X_test.drop([c for c in drop_cols if c in X_test.columns], axis=1)
-            logging.info("Step 1-3: Addition, Extraction, Reduction completed")
-
-            # Handling multi-label categorical before scaling (OneHot)
-            multi_cols = X_train.select_dtypes(include=['object']).columns
+            # Step 4: Normalization (OHE + Scaling)
+            multi_cat_cols = X_train_f.select_dtypes(include=['object']).columns.tolist()
             
-            ct = ColumnTransformer(transformers=[
-                ('onehot', OneHotEncoder(drop='first', handle_unknown='ignore'), multi_cols)
+            ct = ColumnTransformer([
+                ('ohe', OneHotEncoder(drop='first', handle_unknown='ignore', **OHE_KWARGS), multi_cat_cols)
             ], remainder='passthrough')
 
-            X_train_transformed = ct.fit_transform(X_train)
-            X_test_transformed = ct.transform(X_test)
+            X_train_t = ct.fit_transform(X_train_f)
+            X_test_t  = ct.transform(X_test_f)
             
-            # 4. Normalization / Feature Scaling (Fase 2 - Step 5 & 6)
-            # This is where we ensure no 'GP' strings reach the scaler
-            X_train_scaled = self.scaler.fit_transform(X_train_transformed)
-            X_test_scaled = self.scaler.transform(X_test_transformed)
-            logging.info("Step 4 (Scaling): Standardization completed")
+            scaler = StandardScaler()
+            X_train_s = scaler.fit_transform(X_train_t)
+            X_test_s  = scaler.transform(X_test_t)
+            print(f"[✓] Step 4: Normalization ({X_train_s.shape[1]} fitur setelah OHE+Scaling)")
 
-            # 5. Feature Selection (SelectKBest)
-            X_train_selected = self.selector.fit_transform(X_train_scaled, y_train)
-            X_test_selected = self.selector.transform(X_test_scaled)
+            # Step 5: Selection + PCA
+            k_best = min(20, X_train_s.shape[1])
+            selector = SelectKBest(f_classif, k=k_best)
+            X_train_sel = selector.fit_transform(X_train_s, y_train)
+            X_test_sel  = selector.transform(X_test_s)
             
-            # 6. PCA (Dimensionality Reduction)
-            # Only apply if features > n_components
-            if X_train_selected.shape[1] > self.n_components:
-                X_train_final = self.pca.fit_transform(X_train_selected)
-                X_test_final = self.pca.transform(X_test_selected)
-                logging.info(f"Step 5 (PCA): Reduced to {self.n_components} components")
-            else:
-                X_train_final = X_train_selected
-                X_test_final = X_test_selected
+            n_comp = min(self.n_components, X_train_sel.shape[1])
+            pca = PCA(n_components=n_comp, random_state=42)
+            X_train_final = pca.fit_transform(X_train_sel)
+            X_test_final  = pca.transform(X_test_sel)
+            
+            explained = pca.explained_variance_ratio_.sum() * 100
+            print(f"[✓] Step 5: Selection & PCA Selesai ({n_comp} komponen | Explained: {explained:.1f}%)")
 
-            return X_train_final, X_test_final
+            # [M1] Preprocessor dictionary for persistence
+            preprocessors = {
+                'column_transformer': ct,
+                'scaler': scaler,
+                'selector': selector,
+                'pca': pca
+            }
+
+            return X_train_final, X_test_final, preprocessors
 
         except Exception as e:
             raise CustomException(e, sys)

@@ -1,62 +1,60 @@
 ==========================================================
-      PANDUAN WORKFLOW AUDIT ML (REVISED - V2)
+PANDUAN WORKFLOW AUDIT ML - VERSI 3 (PERFECT VERSION)
 ==========================================================
-Proyek: Prediksi Kelulusan Mahasiswa (Enterprise Standard)
-
-Berikut adalah struktur file yang sudah diperbaiki sesuai standar 
-Senior ML Engineer untuk mencegah Data Leakage & Overfitting:
-
+Sistem Audit Machine Learning untuk Prediksi Kelulusan Mahasiswa
+Standar: Principal ML Engineer / Audit Ready / Inference Ready
 ----------------------------------------------------------
-FASE 1: LOAD DATASET
+
+FASE 1: DATA LOADING & EDA DASHBOARD
 ----------------------------------------------------------
 -> src/data_loader.py
-   - Membaca dataset CSV dari 'data/raw/'.
-   - Penanganan otomatis pemisah (sep=;) & tipe data numeric.
+   - Proteksi FileNotFoundError.
+   - Auto-detect Separator (CSV/Semicolon).
+   - Laporan Otomatis: Shape, Duplikat, Missing Values.
+   - Analisa Distribusi Kelas & Imbalance Ratio.
 
-----------------------------------------------------------
-FASE 2: DATA PREPARATION (7 Teknik Dasar)
+FASE 2: DATA PREPARATION (7 TEKNIK)
 ----------------------------------------------------------
 -> src/preprocess.py
    1. Cleaning: Hapus duplikat.
-   2. Imputation: Median/Modus.
-   3. Transformation: Binary encoding awal.
-   4. Outlier Handling: IQR Clipping.
-   5. Normalization: (Pindah ke Pipeline/Engineering).
-   6. Feature Scaling: (Pindah ke Pipeline/Engineering).
-   7. Data Splitting: DILAKUKAN DI AWAL (Penting!)
+   2. Imputation: Median (Numerik) & Modus (Kategorikal).
+   3. Transformation: Individual LabelEncoder per kolom.
+   4. Outlier Handling: Dynamic IQR Clipping (Exclude Target).
+   5. Data Splitting: 80:20 Stratified Split (dengan guard).
+   6. Normalization: (Logika di Fase 3).
+   7. Imbalance Handling: (Logika di Fase 4).
 
-----------------------------------------------------------
-FASE 3: FEATURE ENGINEERING (5 Teknik Lanjutan)
+FASE 3: ADVANCED FEATURE ENGINEERING (5 TEKNIK)
 ----------------------------------------------------------
 -> src/feature_engineering.py
-   - Dilakukan setelah Splitting untuk mencegah kebocoran informasi.
-   1. Feature Addition: 'Midterm_Avg'.
-   2. Feature Extraction: 'Study_Efficiency', 'Fail_History'.
-   3. Feature Reduction: Drop kolom redundant/leakage.
-   4. Feature Selection: SelectKBest (F-Classif).
-   5. Dimensionality Reduction: PCA (Principal Component Analysis).
-   6. Scaling: Standardization (Z-Score) dilakukan di sini.
+   1. Addition: Fitur Midterm_Avg.
+   2. Extraction: Fitur Study_Efficiency.
+   3. Reduction: Drop fitur redundan, PERTAHANKAN 'failures'.
+   4. Normalization: OHE (Compatibility Guard) + Scaling.
+   5. Selection & PCA: SelectKBest + Reduksi Dimensi via PCA.
+   * OUTPUT: Menyimpan 'outputs/models/preprocessors.pkl' untuk inferensi.
 
-----------------------------------------------------------
-FASE 4: MODELING (Tuning & Balancing)
+FASE 4: MODEL COMPARISON & TUNING
 ----------------------------------------------------------
 -> src/train.py
-   - Imbalance Handling: SMOTE (Hanya dilakukan pada Data Train).
-   - Hyperparameter Tuning: RandomizedSearchCV (Grid Search alternatif).
-   - Model: LR, Random Forest, SVM, XGBoost.
+   - Handling Imbalance: SMOTE (Hanya pada data train).
+   - 10 Model Audit: LR, DT, RF, NB, KNN, SVM, XGBoost, GB, AdaBoost, MLP.
+   - Hyperparameter Tuning: RandomizedSearchCV (n_iter=10) + StratifiedKFold.
+   - Save Models: Semua 10 model disimpan dalam format .pkl.
 
+FASE 5: PROFESSIONAL EVALUATION & VIZ
 ----------------------------------------------------------
-FASE 5: EVALUATION & INFERENCE
-----------------------------------------------------------
--> src/evaluate.py (Dulu predict.py)
-   - Matrix perbandingan (Acc, F1, AUC-ROC) & grafik.
--> src/predict.py
-   - Digunakan khusus untuk inferensi data mahasiswa baru.
+-> src/evaluate.py
+   - Metrik Lengkap: Accuracy, F1-Score, Precision, Recall, AUC-ROC.
+   - Robustness Check: Cross Validation Mean & Std (k=5 Stratified).
+   - Dashboard Visual: Bar Chart (4 Metrik) + Confusion Matrix Best Model.
+   - Save Report: Hasil disimpan di 'outputs/' (CSV & PNG).
 
 ==========================================================
-FILE EKSEKUSI
+FILE EKSEKUSI & DOKUMENTASI
 ==========================================================
-1. main.py: Menjalankan audit total ke semua dataset.
-2. notebooks/01-eda.ipynb: Eksplorasi & Visualisasi awal.
-3. notebooks/02-full-audit-pipeline.ipynb: Demo pipeline lengkap.
+1. main.py: Orchestrator audit otomatis seluruh dataset.
+2. README.md: Panduan instalasi, teknologi, dan referensi utama.
+3. notebooks/02-full-audit-pipeline.ipynb: Demo audit interaktif.
 ==========================================================
+✅ Status: ALL ISSUES RESOLVED (PERFECT VERSION)
