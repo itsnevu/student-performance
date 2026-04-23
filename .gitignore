@@ -159,3 +159,8 @@ artifacts/
 *.png
 *.csv
 !data/raw/*.csv
+
+# Personal Notes & Roadmap
+FUTURE_ROADMAP_MLOPS.txt
+PANDUAN_WORKFLOW_AUDIT.txt
+*.log
