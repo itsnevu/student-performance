@@ -1,0 +1,12 @@
+venv/
+artifacts/logs/
+artifacts/*.pkl
+models/*.pkl
+outputs/*.png
+outputs/*.csv
+data/raw/*
+data/processed/*
+data/external/*
+__pycache__/
+*.ipynb_checkpoints
+.env
