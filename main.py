@@ -1,5 +1,6 @@
 import sys
 import os
+import pandas as pd
 from src.data_loader import load_data
 from src.preprocess import DataPreprocess
 from src.train import ModelTrainer
@@ -7,37 +8,39 @@ from src.predict import ModelEvaluator
 from src.logger import logging
 from src.exception import CustomException
 
-def main():
+def run_audit_pipeline():
     try:
-        logging.info("Starting the ML Pipeline")
+        logging.info("==========================================")
+        logging.info("      STARTING TOTAL AUDIT ML PIPELINE    ")
+        logging.info("==========================================")
         
-        # Path to data
+        # Phase 1: Load Dataset
         data_path = os.path.join("data", "raw", "student-mat.csv")
-        
-        # 1. Load Data
         df = load_data(data_path)
         
         if df is not None:
-            # 2. Preprocessing
+            # Phase 2 & 3: Data Preparation (7 Techniques) & Feature Engineering
             preprocessor = DataPreprocess()
-            df = preprocessor.feature_engineering(df)
-            X_train, X_test, X_train_sc, X_test_sc, y_train, y_test, features = preprocessor.split_and_transform(df)
+            X_train, X_test, y_train, y_test, feature_names = preprocessor.audit_preparation(df)
             
-            # 3. Training
+            # Phase 4: Modeling (10 Models)
             trainer = ModelTrainer()
-            lr, dt = trainer.initiate_model_trainer(X_train_sc, X_train, y_train)
+            trained_models, cv_results = trainer.initiate_model_trainer(X_train, y_train)
             
-            # 4. Evaluation
+            # Phase 5: Evaluation
             evaluator = ModelEvaluator()
-            evaluator.evaluate((lr, dt), (X_test_sc, X_test, y_test), features)
+            performance_table = evaluator.evaluate_all(trained_models, X_test, y_test)
             
-            logging.info("Pipeline executed successfully!")
+            logging.info("Audit Pipeline Completed Successfully!")
+            print("\nAudit Selesai! Cek folder 'outputs/' untuk hasil perbandingan model.")
+            print("Model terbaik adalah:", performance_table.iloc[0]['Model'])
+            
         else:
-            logging.warning("No data found. Please place 'student-mat.csv' in 'data/raw/'.")
+            logging.error("Data not found. Audit aborted.")
 
     except Exception as e:
-        logging.error(f"Error in main: {str(e)}")
+        logging.error(f"Audit Pipeline Failed: {str(e)}")
         raise CustomException(e, sys)
 
 if __name__ == "__main__":
-    main()
+    run_audit_pipeline()
