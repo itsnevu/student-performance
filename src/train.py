@@ -1,16 +1,12 @@
 import sys
 import os
 import joblib
-import pandas as pd
+from sklearn.model_selection import RandomizedSearchCV, StratifiedKFold
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier
-from sklearn.model_selection import StratifiedKFold, cross_val_score
+from imblearn.over_sampling import SMOTE
 from src.exception import CustomException
 from src.logger import logging
 
@@ -19,42 +15,52 @@ class ModelTrainer:
         self.models_dir = "models"
         os.makedirs(self.models_dir, exist_ok=True)
         self.models = {
-            "Logistic Regression": LogisticRegression(max_iter=2000),
-            "Decision Tree": DecisionTreeClassifier(max_depth=5, criterion='entropy'),
-            "Random Forest": RandomForestClassifier(n_estimators=100, max_depth=5),
-            "Naive Bayes": GaussianNB(),
-            "KNN": KNeighborsClassifier(n_neighbors=5),
-            "SVM": SVC(probability=True),
-            "XGBoost": XGBClassifier(use_label_encoder=False, eval_metric='logloss'),
-            "Gradient Boosting": GradientBoostingClassifier(),
-            "AdaBoost": AdaBoostClassifier(),
-            "ANN": MLPClassifier(hidden_layer_sizes=(64, 32), max_iter=1000)
+            "Random Forest": (RandomForestClassifier(), {
+                "n_estimators": [50, 100, 200],
+                "max_depth": [5, 10, None],
+                "min_samples_split": [2, 5, 10]
+            }),
+            "XGBoost": (XGBClassifier(use_label_encoder=False, eval_metric='logloss'), {
+                "n_estimators": [50, 100],
+                "learning_rate": [0.01, 0.1, 0.2],
+                "max_depth": [3, 5, 7]
+            }),
+            "Logistic Regression": (LogisticRegression(max_iter=2000), {
+                "C": [0.1, 1, 10]
+            }),
+            "SVM": (SVC(probability=True), {
+                "C": [0.1, 1, 10],
+                "kernel": ["linear", "rbf"]
+            })
         }
 
     def initiate_model_trainer(self, X_train, y_train):
         try:
-            logging.info("--- Fase 4: Modeling (10 Models Comparison) ---")
-            trained_models = {}
-            cv_results = {}
+            logging.info("--- Fase 4: Modeling (Tuning & Imbalance Handling) ---")
+            
+            # Handling Imbalance ONLY on Train Set
+            smote = SMOTE(random_state=42)
+            X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
+            logging.info(f"SMOTE applied: Resampled train set size {len(y_train_res)}")
 
+            best_models = {}
             skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
-            for name, model in self.models.items():
-                logging.info(f"Training {name}...")
-                model.fit(X_train, y_train)
-                trained_models[name] = model
+            for name, (model, params) in self.models.items():
+                logging.info(f"Tuning {name}...")
+                search = RandomizedSearchCV(
+                    model, param_distributions=params, n_iter=5, 
+                    cv=skf, scoring='f1', n_jobs=-1, random_state=42
+                )
+                search.fit(X_train_res, y_train_res)
                 
-                # Cross Validation
-                cv_score = cross_val_score(model, X_train, y_train, cv=skf, scoring='accuracy')
-                cv_results[name] = cv_score.mean()
-                logging.info(f"{name} CV Accuracy: {cv_score.mean():.4f}")
+                best_model = search.best_estimator_
+                best_models[name] = best_model
+                logging.info(f"{name} best F1: {search.best_score_:.4f}")
 
-                # Save each model
-                model_filename = name.lower().replace(" ", "_") + ".pkl"
-                joblib.dump(model, os.path.join(self.models_dir, model_filename))
+                joblib.dump(best_model, os.path.join(self.models_dir, f"{name.lower().replace(' ', '_')}.pkl"))
 
-            logging.info("All 10 models trained and saved successfully")
-            return trained_models, cv_results
+            return best_models
 
         except Exception as e:
             raise CustomException(e, sys)

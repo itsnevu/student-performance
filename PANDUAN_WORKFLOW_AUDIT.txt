@@ -1,71 +1,62 @@
 ==========================================================
-      PANDUAN WORKFLOW AUDIT MACHINE LEARNING
+      PANDUAN WORKFLOW AUDIT ML (REVISED - V2)
 ==========================================================
-Proyek: Prediksi Kelulusan Mahasiswa (Professional Audit)
+Proyek: Prediksi Kelulusan Mahasiswa (Enterprise Standard)
 
-Berikut adalah penjelasan fungsi setiap file berdasarkan urutan 
-Workflow 5 Fase yang Anda minta:
+Berikut adalah struktur file yang sudah diperbaiki sesuai standar 
+Senior ML Engineer untuk mencegah Data Leakage & Overfitting:
 
 ----------------------------------------------------------
 FASE 1: LOAD DATASET
 ----------------------------------------------------------
 -> src/data_loader.py
-   Fungsi: Membaca dataset (.csv) dari folder 'data/raw/'. 
-   Keunggulan: Otomatis mendeteksi pemisah (;) dan membersihkan 
-   format angka yang terbungkus tanda kutip agar tidak error.
+   - Membaca dataset CSV dari 'data/raw/'.
+   - Penanganan otomatis pemisah (sep=;) & tipe data numeric.
 
 ----------------------------------------------------------
-FASE 2: DATA PREPARATION (7 Teknik)
-----------------------------------------------------------
--> src/preprocess.py (Fungsi: audit_preparation)
-   Berisi implementasi 7 langkah persiapan:
-   1. Cleaning: Hapus data duplikat.
-   2. Imputation: Isi nilai null (Median/Modus).
-   3. Transformation: Encoding kategori ke angka.
-   4. Outlier Handling: Teknik IQR Clipping untuk data ekstrem.
-   5. Normalization/Scaling: Standarisasi nilai agar seragam.
-   6. Imbalance Handling: Resampling agar kelas target seimbang.
-   7. Data Splitting: Membagi data Train & Test (80:20).
-
-----------------------------------------------------------
-FASE 3: FEATURE ENGINEERING
+FASE 2: DATA PREPARATION (7 Teknik Dasar)
 ----------------------------------------------------------
 -> src/preprocess.py
-   Berisi 3 teknik audit:
-   1. Feature Addition: Membuat kolom 'Total_Score'.
-   2. Feature Extraction: Membuat kolom 'Study_Efficiency'.
-   3. Feature Reduction: Menghapus kolom asli yang sudah diolah 
-      dan fitur tidak relevan untuk menjaga akurasi.
+   1. Cleaning: Hapus duplikat.
+   2. Imputation: Median/Modus.
+   3. Transformation: Binary encoding awal.
+   4. Outlier Handling: IQR Clipping.
+   5. Normalization: (Pindah ke Pipeline/Engineering).
+   6. Feature Scaling: (Pindah ke Pipeline/Engineering).
+   7. Data Splitting: DILAKUKAN DI AWAL (Penting!)
 
 ----------------------------------------------------------
-FASE 4: MODELING (10 Model Pembanding)
+FASE 3: FEATURE ENGINEERING (5 Teknik Lanjutan)
+----------------------------------------------------------
+-> src/feature_engineering.py
+   - Dilakukan setelah Splitting untuk mencegah kebocoran informasi.
+   1. Feature Addition: 'Midterm_Avg'.
+   2. Feature Extraction: 'Study_Efficiency', 'Fail_History'.
+   3. Feature Reduction: Drop kolom redundant/leakage.
+   4. Feature Selection: SelectKBest (F-Classif).
+   5. Dimensionality Reduction: PCA (Principal Component Analysis).
+   6. Scaling: Standardization (Z-Score) dilakukan di sini.
+
+----------------------------------------------------------
+FASE 4: MODELING (Tuning & Balancing)
 ----------------------------------------------------------
 -> src/train.py
-   Melatih 10 algoritma sekaligus untuk mencari yang terbaik:
-   (LR, DT, RF, Naive Bayes, KNN, SVM, XGBoost, GradBoost, 
-   AdaBoost, dan ANN).
-   Model yang sudah dilatih disimpan otomatis di folder 'models/'.
+   - Imbalance Handling: SMOTE (Hanya dilakukan pada Data Train).
+   - Hyperparameter Tuning: RandomizedSearchCV (Grid Search alternatif).
+   - Model: LR, Random Forest, SVM, XGBoost.
 
 ----------------------------------------------------------
-FASE 5: MODEL EVALUATION & BEST MODEL
+FASE 5: EVALUATION & INFERENCE
 ----------------------------------------------------------
+-> src/evaluate.py (Dulu predict.py)
+   - Matrix perbandingan (Acc, F1, AUC-ROC) & grafik.
 -> src/predict.py
-   Menghitung metrik profesional (Accuracy, F1-Score, Precision, 
-   Recall, AUC-ROC) dan menghasilkan grafik perbandingan model.
-   Hasil audit visual disimpan di folder 'outputs/'.
+   - Digunakan khusus untuk inferensi data mahasiswa baru.
 
 ==========================================================
-FILE EKSEKUSI (OTOMASI & VISUALISASI)
+FILE EKSEKUSI
 ==========================================================
-1. main.py
-   File utama untuk menjalankan seluruh workflow 1-5 secara 
-   otomatis untuk semua dataset di folder 'raw'.
-
-2. notebooks/02-full-audit-pipeline.ipynb
-   Versi visual dari workflow 1-5. Gunakan ini untuk membuat 
-   laporan atau presentasi hasil audit Anda.
-
-3. src/logger.py & src/exception.py
-   Mesin pendukung untuk mencatat aktivitas (logs) dan 
-   menangani error secara profesional.
+1. main.py: Menjalankan audit total ke semua dataset.
+2. notebooks/01-eda.ipynb: Eksplorasi & Visualisasi awal.
+3. notebooks/02-full-audit-pipeline.ipynb: Demo pipeline lengkap.
 ==========================================================
