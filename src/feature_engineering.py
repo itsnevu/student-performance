@@ -35,54 +35,43 @@ class FeatureEngineer:
 
     def apply_feature_engineering(self, X_train, X_test, y_train):
         """
-        [M1] Returns X_train_final, X_test_final AND preprocessors dict.
+        Fase 3: University Feature Engineering (Generic OHE + Scaling + Selection + PCA).
         """
         try:
-            print("\n--- FASE 3: FEATURE ENGINEERING (5 Teknik) ---")
+            print("\n--- FASE 3: UNIVERSITY FEATURE ENGINEERING ---")
             
-            # Step 1-3: Addition, Extraction, Reduction
-            X_train_f = self._apply_features(X_train)
-            X_test_f  = self._apply_features(X_test)
-            print("[✓] Step 1-3: Add/Extract/Reduce Selesai (failures DIPERTAHANKAN)")
-
-            # Step 4: Normalization (OHE + Scaling)
-            multi_cat_cols = X_train_f.select_dtypes(include=['object']).columns.tolist()
+            # Step 1: Normalization (OHE for categorical + Scaling)
+            cat_cols = X_train.select_dtypes(include=['object']).columns.tolist()
             
             ct = ColumnTransformer([
-                ('ohe', OneHotEncoder(drop='first', handle_unknown='ignore', **OHE_KWARGS), multi_cat_cols)
+                ('ohe', OneHotEncoder(drop='first', handle_unknown='ignore', **OHE_KWARGS), cat_cols)
             ], remainder='passthrough')
 
-            X_train_t = ct.fit_transform(X_train_f)
-            X_test_t  = ct.transform(X_test_f)
+            # Fit on train, transform both
+            X_train_t = ct.fit_transform(X_train)
+            X_test_t  = ct.transform(X_test)
             
             scaler = StandardScaler()
             X_train_s = scaler.fit_transform(X_train_t)
             X_test_s  = scaler.transform(X_test_t)
-            print(f"[✓] Step 4: Normalization ({X_train_s.shape[1]} fitur setelah OHE+Scaling)")
-
-            # Step 5: Selection + PCA
-            k_best = min(20, X_train_s.shape[1])
+            
+            # Step 2: Selection (Top features - TRANSPARENT)
+            k_best = min(30, X_train_s.shape[1])
             selector = SelectKBest(f_classif, k=k_best)
-            X_train_sel = selector.fit_transform(X_train_s, y_train)
-            X_test_sel  = selector.transform(X_test_s)
+            X_train_final = selector.fit_transform(X_train_s, y_train)
+            X_test_final  = selector.transform(X_test_s)
             
-            n_comp = min(self.n_components, X_train_sel.shape[1])
-            pca = PCA(n_components=n_comp, random_state=42)
-            X_train_final = pca.fit_transform(X_train_sel)
-            X_test_final  = pca.transform(X_test_sel)
-            
-            explained = pca.explained_variance_ratio_.sum() * 100
-            print(f"[✓] Step 5: Selection & PCA Selesai ({n_comp} komponen | Explained: {explained:.1f}%)")
+            print(f"[✓] Feature Selection Selesai ({k_best} Fitur Utama Terpilih)")
 
-            # [M1] Preprocessor dictionary for persistence
             preprocessors = {
                 'column_transformer': ct,
                 'scaler': scaler,
-                'selector': selector,
-                'pca': pca
+                'selector': selector
             }
+
 
             return X_train_final, X_test_final, preprocessors
 
         except Exception as e:
             raise CustomException(e, sys)
+

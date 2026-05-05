@@ -24,18 +24,11 @@ class ModelTrainer:
         
         # [C-m12] All models with random_state=42
         self.models = {
-            "Logistic Regression" : LogisticRegression(max_iter=1000, random_state=42),
-            "Decision Tree"       : DecisionTreeClassifier(random_state=42),
             "Random Forest"       : RandomForestClassifier(random_state=42),
-            "Naive Bayes"         : GaussianNB(),
-            "KNN"                 : KNeighborsClassifier(),
-            "SVM"                 : SVC(probability=True, random_state=42),
-            # [C1] No use_label_encoder
             "XGBoost"             : XGBClassifier(eval_metric='logloss', verbosity=0, random_state=42),
-            "Gradient Boosting"   : GradientBoostingClassifier(random_state=42),
-            "AdaBoost"            : AdaBoostClassifier(random_state=42),
-            "ANN (MLP)"           : MLPClassifier(max_iter=500, random_state=42)
+            "Gradient Boosting"   : GradientBoostingClassifier(random_state=42)
         }
+
         
         # [M4] n_iter=10 support | [M7] KNN tuning
         self.tuning_params = {
@@ -63,11 +56,14 @@ class ModelTrainer:
 
     def initiate_model_trainer(self, X_train, y_train):
         try:
-            print("\n--- FASE 4: MODELING (10 Model + SMOTE + Tuning) ---")
+            print("\n--- FASE 4: MODELING (TOP 3 MODELS + SMOTE) ---")
             
+            # 1. SMOTE (Otomatis & Eksplisit di dalam engine)
             smote = SMOTE(random_state=42)
             X_res, y_res = smote.fit_resample(X_train, y_train)
             print(f"[✓] SMOTE Applied. Balanced dataset: {len(y_res)} samples")
+            print(f"[*] Metodologi: SMOTE hanya pada Training Set (No Leakage).")
+
 
             cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
             trained_models = {}

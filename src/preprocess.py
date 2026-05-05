@@ -13,14 +13,30 @@ class DataPreprocess:
 
     def initiate_preprocessing(self, df):
         try:
-            print("\n--- FASE 2: DATA PREPARATION (7 Teknik) ---")
+            print("\n--- FASE 2: UNIVERSITY DATA PREPARATION ---")
             
             # 1. Cleaning
-            before = len(df)
             df = df.drop_duplicates().reset_index(drop=True)
-            print(f"[✓] Step 1: Cleaning ({before - len(df)} duplikat dibuang)")
 
-            # 2. Imputation (Fixed: Numerical & Categorical)
+            # 2. Auto-detect Target Column
+            target_candidates = ['Target', 'grade', 'Grade', 'G3', 'status']
+            target_col = None
+            for cand in target_candidates:
+                if cand in df.columns:
+                    target_col = cand
+                    break
+            
+            if not target_col:
+                target_col = df.columns[-1]
+                print(f"[WARN] Target tidak terdeteksi, menggunakan kolom terakhir: {target_col}")
+
+            # 3. Handle specific University Target Logic
+            if target_col == 'Target': # Dropout dataset
+                # Map Graduate to 1, others to 0
+                df[target_col] = df[target_col].map({'Graduate': 1, 'Dropout': 0, 'Enrolled': 0})
+                print("[✓] Logic: Graduation Prediction (Graduate=1, Others=0)")
+            
+            # 4. Imputation
             num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
             cat_cols = df.select_dtypes(include=['object']).columns.tolist()
 
@@ -31,43 +47,38 @@ class DataPreprocess:
             if cat_cols:
                 imp_cat = SimpleImputer(strategy='most_frequent')
                 df[cat_cols] = imp_cat.fit_transform(df[cat_cols])
-            print(f"[✓] Step 2: Imputation Selesai")
 
-            # 3. Transformation (C7: LabelEncoder per kolom)
-            binary_cols = [c for c in df.columns if df[c].nunique() == 2 and df[c].dtype == 'object']
-            for col in binary_cols:
-                le = LabelEncoder()
-                df[col] = le.fit_transform(df[col])
-                self.label_encoders[col] = le
-            print(f"[✓] Step 3: Transformation ({len(binary_cols)} kolom binary di-encode)")
-
-            # 4. Outlier Handling (Dinamis IQR)
-            num_cols_now = [c for c in df.select_dtypes(include=[np.number]).columns if c != 'G3']
-            total_clipped = 0
-            for col in num_cols_now:
+            # 5. Transformation (Label Encoding for Binary Categorical)
+            for col in cat_cols:
+                if df[col].nunique() == 2:
+                    le = LabelEncoder()
+                    df[col] = le.fit_transform(df[col])
+                    self.label_encoders[col] = le
+            
+            # 6. Outlier Handling (Numerical only, exclude target)
+            num_features = [c for c in num_cols if c != target_col]
+            for col in num_features:
                 Q1, Q3 = df[col].quantile(0.25), df[col].quantile(0.75)
                 IQR = Q3 - Q1
-                lower, upper = Q1 - 1.5*IQR, Q3 + 1.5*IQR
-                total_clipped += ((df[col] < lower) | (df[col] > upper)).sum()
-                df[col] = np.clip(df[col], lower, upper)
-            print(f"[✓] Step 4: Outlier Handling ({total_clipped} nilai di-clip)")
+                df[col] = np.clip(df[col], Q1 - 1.5*IQR, Q3 + 1.5*IQR)
 
-            # 7. Splitting (C3: Guard for small classes)
-            target_col = 'G3' if 'G3' in df.columns else (df.columns[-1] if 'Final_Grade_Class' not in df.columns else 'Final_Grade_Class')
+            # 7. Splitting
             X = df.drop([target_col], axis=1)
-            y = df[target_col].apply(lambda x: 1 if x >= 10 else 0) if target_col == 'G3' else df[target_col]
+            y = df[target_col]
 
-            min_class = y.value_counts().min()
-            stratify_param = y if min_class >= 2 else None
-            if stratify_param is None:
-                print("[WARN] Stratified split dinonaktifkan (kelas terlalu kecil)")
+            # Drop student_id or similar if exists
+            id_cols = ['student_id', 'id', 'STUDENT_ID']
+            for id_c in id_cols:
+                if id_c in X.columns:
+                    X = X.drop(id_c, axis=1)
 
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42, stratify=stratify_param
+                X, y, test_size=0.2, random_state=42, stratify=(y if y.value_counts().min() >= 2 else None)
             )
-            print(f"[✓] Step 7: Data Splitting Selesai (Train: {len(X_train)}, Test: {len(X_test)})")
+            print(f"[✓] Data Splitting: Train {len(X_train)}, Test {len(X_test)}")
 
             return X_train, X_test, y_train, y_test
 
         except Exception as e:
             raise CustomException(e, sys)
+
