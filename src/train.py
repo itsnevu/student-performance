@@ -87,7 +87,7 @@ class ModelTrainer:
                 pkl_path = os.path.join(self.models_dir, f"{name.lower().replace(' ', '_')}.pkl")
                 joblib.dump(best_model, pkl_path)
 
-            print(f"[✓] Semua 10 Model Tersimpan di {self.models_dir}")
+            print(f"[✓] Semua 3 Model Tersimpan di {self.models_dir}")
             return trained_models
 
         except Exception as e:

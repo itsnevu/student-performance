@@ -30,11 +30,10 @@ class DataPreprocess:
                 target_col = df.columns[-1]
                 print(f"[WARN] Target tidak terdeteksi, menggunakan kolom terakhir: {target_col}")
 
-            # 3. Handle specific University Target Logic
-            if target_col == 'Target': # Dropout dataset
-                # Map Graduate to 1, others to 0
-                df[target_col] = df[target_col].map({'Graduate': 1, 'Dropout': 0, 'Enrolled': 0})
-                print("[✓] Logic: Graduation Prediction (Graduate=1, Others=0)")
+            # 3. Handle specific University Target Logic (Multi-class Label Encoding)
+            self.target_encoder = LabelEncoder()
+            df[target_col] = self.target_encoder.fit_transform(df[target_col])
+            print(f"[✓] Target Encoded: {dict(zip(self.target_encoder.classes_, self.target_encoder.transform(self.target_encoder.classes_)))}")
             
             # 4. Imputation
             num_cols = df.select_dtypes(include=[np.number]).columns.tolist()

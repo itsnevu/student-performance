@@ -1,0 +1,48 @@
+==========================================================
+ WORKFLOW EKSPERIMEN ML (NOTEBOOK-BASED)
+==========================================================
+ANALISIS PERBANDINGAN MODEL MACHINE LEARNING UNTUK PREDIKSI KELULUSAN MAHASISWA
+----------------------------------------------------------
+
+FASE 1: DATA LOADING & AUDIT (CELL 1-2)
+----------------------------------------------------------
+   - Auto-detect Separator: Deteksi otomatis pemisah CSV (Semicolon/Comma).
+   - Numeric Coercion: Membersihkan data "messy" dengan memaksa konversi teks ke angka (coerce to NaN).
+   - Data Health Report: Laporan otomatis jumlah baris, kolom, missing values, dan data duplikat.
+   - Analisa Distribusi: Cek keseimbangan kelas Target secara visual.
+   - Science Audit: Visualisasi Heatmap Pearson Correlation untuk melihat hubungan antar fitur.
+
+FASE 2: DATA PREPARATION & CLEANING (CELL 3)
+----------------------------------------------------------
+   - Target Encoding: Transformasi label Dropout, Enrolled, Graduate menjadi nilai numerik (0, 1, 2).
+   - Smart Imputation: Mengisi data kosong menggunakan Median (Fitur Numerik) & Modus (Fitur Kategorikal).
+   - Outlier Handling: Penerapan Dynamic IQR Clipping untuk membatasi nilai ekstrem agar model stabil.
+   - Data Splitting: Pembagian 80:20 Stratified Split untuk menjaga rasio kelas pada data latih dan uji.
+
+FASE 3: ADVANCED FEATURE ENGINEERING (CELL 4)
+----------------------------------------------------------
+   - Normalization: One-Hot Encoding (OHE) untuk fitur kategori & Standard Scaling untuk fitur angka.
+   - ColumnTransformer: Integrasi seluruh alur preprocessing dalam satu pipeline transparan.
+   - Feature Selection: Menggunakan SelectKBest (k=30) dengan metode F-Classif untuk memilih fitur paling relevan.
+
+FASE 4: BALANCED MODELING & TUNING (CELL 5)
+----------------------------------------------------------
+   - Handling Imbalance: Implementasi SMOTE Post-Split (hanya pada data training) untuk mencegah bias model.
+   - 3-Model Comparison: Pelatihan simultan Random Forest, XGBoost, dan Gradient Boosting.
+   - Hyperparameter Tuning: Pencarian otomatis parameter terbaik menggunakan RandomizedSearchCV + StratifiedKFold.
+   - Optimization: Fokus pada peningkatan metrik Akurasi dan F1-Score secara kompetitif.
+
+FASE 5: EVALUASI & INTERACTIVE DASHBOARD (CELL 6+)
+----------------------------------------------------------
+   - Performance Metrics: Perhitungan Accuracy, Precision, Recall, dan F1-Score untuk setiap kelas.
+   - Classification Report: Laporan audit mendetail mengenai performa model pada data testing.
+   - Visual Audit: Dashboard interaktif berupa Confusion Matrix untuk melihat akurasi prediksi mahasiswa.
+   - Export Artifacts: Penyimpanan otomatis hasil dashboard audit ke folder 'outputs/'.
+
+==========================================================
+DOKUMENTASI EKSPERIMEN
+==========================================================
+File Utama: notebooks/Model_ML.ipynb
+Logika: Sinkron dengan modul produksi (src/)
+Tujuan: Presentasi akademik dan validasi metodologi ML.
+==========================================================

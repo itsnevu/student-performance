@@ -20,19 +20,6 @@ class FeatureEngineer:
     def __init__(self, n_components=5):
         self.n_components = n_components
 
-    def _apply_features(self, data):
-        """
-        Helper: Addition + Extraction + Reduction.
-        Independent logic to prevent leakage.
-        """
-        data = data.copy()
-        if 'G1' in data.columns and 'G2' in data.columns:
-            data['Midterm_Avg'] = (data['G1'] + data['G2']) / 2
-        if 'studytime' in data.columns and 'freetime' in data.columns:
-            data['Study_Efficiency'] = data['studytime'] / (data['freetime'] + 0.1)
-        # M10: Keep 'failures' as it is highly predictive
-        return data.drop(columns=[c for c in ['G1', 'G2'] if c in data.columns])
-
     def apply_feature_engineering(self, X_train, X_test, y_train):
         """
         Fase 3: University Feature Engineering (Generic OHE + Scaling + Selection + PCA).

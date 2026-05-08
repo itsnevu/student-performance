@@ -1,0 +1,66 @@
+==========================================================
+FUTURE ROADMAP: MLOPS & PRODUCTION READINESS
+==========================================================
+Catatan pengembangan lanjutan untuk sistem Student Performance.
+Target: Robust, Secure, and Scalable Application.
+
+----------------------------------------------------------
+1. PRECISION INFERENCE LOGIC (Urgent)
+----------------------------------------------------------
+Masalah: Data mahasiswa baru yang diinput via website (JSON) 
+harus melalui jalur transformasi yang identik dengan training.
+Solusi:
+- Sinkronisasi input form dengan preprocessors.pkl.
+- Handling categorical values yang tidak ada di data training.
+- Mapping otomatis (OHE -> Scaling -> PCA) sebelum model.predict().
+
+----------------------------------------------------------
+2. DATABASE INTEGRATION (Historical Data)
+----------------------------------------------------------
+Masalah: Hasil prediksi saat ini bersifat ephemeral (sementara).
+Solusi:
+- Implementasi Database (PostgreSQL/MongoDB).
+- Simpan ID Mahasiswa, Fitur Input, Hasil Prediksi, dan Timestamp.
+- Dashboard Riwayat: Memungkinkan admin melihat tren kelulusan dari waktu ke waktu.
+
+----------------------------------------------------------
+3. API SECURITY & AUTHENTICATION
+----------------------------------------------------------
+Masalah: API di VPS bisa diakses oleh pihak yang tidak berwenang.
+Solusi:
+- API Key Validation: Hanya request dengan header 'X-API-Key' valid yang diproses.
+- JWT Token: Jika aplikasi memiliki sistem login user (Guru/Dosen).
+- CORS Policy: Membatasi akses API hanya dari domain Frontend (Next.js).
+
+----------------------------------------------------------
+4. LOGGING, MONITORING & MODEL DRIFT
+----------------------------------------------------------
+Masalah: Performa model bisa menurun (drift) jika karakteristik 
+siswa di masa depan berubah.
+Solusi:
+- Logging: Catat setiap request, response, dan error ke dalam file log atau ELK Stack.
+- Monitoring: Pantau akurasi model secara berkala dengan data aktual.
+- Retraining Pipeline: Siapkan sistem untuk melatih ulang model secara otomatis 
+  jika performa turun di bawah threshold tertentu.
+
+==========================================================
+APP INTERFACE WORKFLOW (User Journey)
+==========================================================
+1. INPUT PHASE (Frontend - Next.js)
+   - User mengisi formulir data mahasiswa (demografi & akademik).
+   - User juga bisa melakukan drag-and-drop file CSV untuk audit massal.
+
+2. PROCESSING PHASE (Backend - FastAPI)
+   - Data dikirim via Secure API Request.
+   - Script Python menjalankan Feature Engineering secara Real-Time.
+   - Model ML melakukan inferensi (Predict).
+
+3. OUTPUT PHASE (Frontend - Visualization)
+   - Tampilan Hasil: "Lulus" atau "Tidak Lulus" dengan UI yang hidup.
+   - Confidence Score: Menampilkan tingkat keyakinan model (0-100%).
+   - Feature Importance: Visualisasi faktor apa yang paling berpengaruh 
+     terhadap hasil tersebut (misal: Absensi atau Nilai Midterm).
+
+==========================================================
+Status Saat Ini: BACKEND API INITIALIZED (DEVELOPMENT MODE)
+==========================================================

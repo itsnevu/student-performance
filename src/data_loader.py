@@ -28,6 +28,11 @@ def load_data(file_path: str) -> pd.DataFrame:
         # Generic Cleaning: Remove whitespace from column names
         df.columns = [c.strip() for c in df.columns]
 
+        # Force conversion to numeric for potential numeric columns (messy data handling)
+        for col in df.columns:
+            if col.lower() not in ['target', 'status', 'grade']:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+
         print("\n" + "="*60)
         print(f"  AUDIT REPORT FASE 1 (UNIVERSITY DATA): {os.path.basename(file_path)}")
         print("="*60)
