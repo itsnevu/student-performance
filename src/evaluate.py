@@ -53,7 +53,8 @@ class ModelEvaluator:
             results_df.index += 1
             
             # --- [SCIENCE: FEATURE IMPORTANCE] ---
-            best_name = results_df.iloc[0]['Model']
+            trained_results_df = results_df[results_df['Model'] != 'Penelitian Sebelumnya (Baseline)']
+            best_name = trained_results_df.iloc[0]['Model']
             best_model = trained_models[best_name]
             
             fig, axes = plt.subplots(1, 2, figsize=(20, 8))

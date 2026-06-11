@@ -18,6 +18,12 @@ class DataPreprocess:
             # 1. Cleaning
             df = df.drop_duplicates().reset_index(drop=True)
 
+            # Drop student_id or similar if exists early
+            id_cols = ['student_id', 'id', 'STUDENT_ID']
+            for id_c in id_cols:
+                if id_c in df.columns:
+                    df = df.drop(id_c, axis=1)
+
             # 2. Auto-detect Target Column
             target_candidates = ['Target', 'grade', 'Grade', 'G3', 'status']
             target_col = None
@@ -64,12 +70,6 @@ class DataPreprocess:
             # 7. Splitting
             X = df.drop([target_col], axis=1)
             y = df[target_col]
-
-            # Drop student_id or similar if exists
-            id_cols = ['student_id', 'id', 'STUDENT_ID']
-            for id_c in id_cols:
-                if id_c in X.columns:
-                    X = X.drop(id_c, axis=1)
 
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.2, random_state=42, stratify=(y if y.value_counts().min() >= 2 else None)
