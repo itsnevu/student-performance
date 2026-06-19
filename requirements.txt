@@ -2,10 +2,7 @@ pandas
 numpy
 scikit-learn
 xgboost
-imbalanced-learn
 joblib
-matplotlib
-seaborn
 fastapi
 uvicorn
 python-multipart
