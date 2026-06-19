@@ -47,6 +47,9 @@ class ModelTrainer:
                 'max_depth': [3, 5], 
                 'learning_rate': [0.05, 0.1]
             },
+            "Naive Bayes": {
+                'var_smoothing': [1e-9, 1e-8, 1e-7]
+            },
             "KNN": {
                 'n_neighbors': [3, 5, 7, 9], 
                 'weights': ['uniform', 'distance'], 
