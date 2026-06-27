@@ -7,6 +7,3 @@ fastapi
 uvicorn
 python-multipart
 python-dotenv
-matplotlib
-seaborn
-imbalanced-learn
