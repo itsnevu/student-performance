@@ -1,59 +1,81 @@
-#  Student Performance Prediction — ML Audit Pipeline (PERFECT VERSION)
+# 🎓 Student Performance Prediction — ML Pipeline & Prediction App
 
-Proyek ini adalah sistem audit Machine Learning end-to-end yang modular dan siap produksi untuk memprediksi kelulusan mahasiswa berdasarkan berbagai parameter demografis dan akademik.
-
----
-
-##  Referensi & Dasar Audit
-Sistem ini dibangun berdasarkan standar **Principal ML Engineer** dengan mematuhi 5 Fase Audit:
-1. **Fase 1: Data Loading & EDA** — Deteksi profil data dan distribusi target.
-2. **Fase 2: Data Preparation** — 7 teknik (Cleaning, Imputation, Transformation, Outlier, Splitting, Normalization, Imbalance).
-3. **Fase 3: Feature Engineering** — 5 teknik (Addition, Extraction, Reduction, Selection, PCA).
-4. **Fase 4: Modeling** — Audit perbandingan 10 model sekaligus (RF, XGBoost, SVM, KNN, dll) dengan Hyperparameter Tuning.
-5. **Fase 5: Evaluation** — Dashboard performa (F1, Accuracy, Precision, Recall, AUC-ROC, dan CV Mean/Std).
+An end-to-end machine learning system that predicts student graduation outcomes based on demographic and academic factors. The project includes a modular ML audit pipeline, a REST API for inference, and a web interface for trying out predictions directly.
 
 ---
 
-##  Instalasi & Persiapan
+## ✨ Features
 
-### 1. Persiapkan Environment
-Pastikan Anda memiliki Python 3.9+ terinstal.
+Full ML pipeline covering data loading, EDA, cleaning, and feature engineering through to model evaluation. Automated comparison of 10+ algorithms (Random Forest, XGBoost, SVM, KNN, and more) with hyperparameter tuning. A REST API (FastAPI) for serving the model to other applications. A web frontend for entering student data and viewing predictions. Interactive notebooks for exploring the pipeline step by step. Ready to run with Docker.
 
-### 2. Instal Dependencies
-Jalankan perintah berikut untuk menginstal semua pustaka yang diperlukan:
+## 🧱 Project Structure
+
+```
+student-performance/
+├── data/raw/          # Raw dataset (CSV)
+├── notebooks/         # Interactive audit pipeline notebooks
+├── src/               # ML pipeline modules
+├── frontend/          # Web app (Next.js) for input & predictions
+├── outputs/           # Trained models (.pkl) & evaluation results
+├── app.py             # FastAPI backend for inference
+├── main.py            # Entry point for the automated audit pipeline
+├── Dockerfile
+└── requirements.txt
+```
+
+## 🧠 Methodology
+
+The pipeline follows five ML audit phases. Phase 1, Data Loading & EDA, profiles the data and target distribution. Phase 2, Data Preparation, covers cleaning, imputation, transformation, outlier handling, splitting, normalization, and imbalance handling. Phase 3, Feature Engineering, covers feature addition, extraction, reduction, selection, and PCA. Phase 4, Modeling, compares ten models with hyperparameter tuning. Phase 5, Evaluation, measures F1, Accuracy, Precision, Recall, AUC-ROC, and cross-validation mean/std.
+
+## 🛠️ Tech Stack
+
+Machine Learning: Python, Pandas, NumPy, Scikit-Learn, XGBoost, Imbalanced-learn (SMOTE), Joblib.
+Backend API: FastAPI, Uvicorn.
+Frontend: TypeScript (Next.js).
+Deployment: Docker, Vercel.
+
+## 🚀 Getting Started
+
+### Set up the environment
+
 ```bash
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Struktur Folder
-Pastikan dataset CSV Anda diletakkan di dalam folder:
-`data/raw/`
+### Run the audit pipeline
 
----
+Place your CSV dataset in `data/raw/`, then run:
 
-## Cara Penggunaan
-
-### A. Jalankan Audit Otomatis (Hasil Akhir)
-Untuk menjalankan seluruh proses audit untuk semua dataset di `data/raw/` sekaligus:
 ```bash
 python main.py
 ```
-**Hasil akan tersimpan di:**
-- `outputs/models/` — File `.pkl` untuk model dan preprocessor.
-- `outputs/` — Grafik perbandingan (`.png`) dan tabel CSV hasil audit.
 
-### B. Jalankan Audit Interaktif (Langkah-demi-Langkah)
-Jika ingin melihat prosesnya secara detail di setiap fase, buka Notebook:
-`notebooks/02-full-audit-pipeline.ipynb`
+Trained models and evaluation charts are saved automatically to the `outputs/` folder.
 
----
+### Run the API
 
-## Teknologi yang Digunakan
-- **Core**: Python, Pandas, NumPy
-- **ML Framework**: Scikit-Learn, XGBoost
-- **Sampling**: Imbalanced-learn (SMOTE)
-- **Visualization**: Matplotlib, Seaborn
-- **Persistence**: Joblib
+```bash
+uvicorn app:app --reload
+```
 
----
-**Status Audit:** ✅ PERFECT VERSION (Inference Ready, No Data Leakage)
+### Run the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Explore interactively
+
+Open the notebooks in the `notebooks/` folder to walk through each phase of the pipeline in detail.
+
+## 📊 Dataset
+
+Uses a student performance dataset with 31 features, covering demographics (age, gender, family background), study habits, and academic history.
+
+## 📄 License
+
+Not yet specified.
